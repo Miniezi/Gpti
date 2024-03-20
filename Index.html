@@ -1,81 +1,102 @@
-
-html
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatGPT Mobile</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        #chat-container {
-            max-width: 400px;
-            margin: auto;
-        }
-        #chat-history {
-            border: 1px solid #ccc;
-            padding: 10px;
-            height: 200px;
-            overflow-y: scroll;
-        }
-        #input-container {
-            margin-top: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Happy Birthday!</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #ff1493;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+    
+    .card {
+      width: 80%;
+      max-width: 600px;
+      background-color: pink;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      text-align: center;
+      position: relative;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    
+    .heart {
+      position: absolute;
+      font-size: 3em;
+      color: red;
+      animation: heartBeat 2s infinite;
+      opacity: 0;
+    }
+    
+    @keyframes heartBeat {
+      0% {
+        transform: scale(1);
+        opacity: 0;
+      }
+      20% {
+        transform: scale(1.3);
+        opacity: 1;
+      }
+      40% {
+        transform: scale(1);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 0;
+      }
+    }
+    
+    .wish {
+      position: absolute;
+      font-size: 2em;
+      color: #ffffff;
+      animation: scroll 10s linear infinite;
+      opacity: 0;
+      transform: translateX(-100%);
+    }
+    
+    @keyframes scroll {
+      0% {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+      10% {
+        transform: translateX(0%);
+        opacity: 1;
+      }
+      90% {
+        transform: translateX(100%);
+        opacity: 1;
+      }
+      100% {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+  </style>
 </head>
 <body>
-
-<div id="chat-container">
-    <div id="chat-history"></div>
-    <div id="input-container">
-        <input type="text" id="user-input" placeholder="Введите сообщение">
-        <button onclick="sendMessage()">Отправить</button>
-    </div>
-</div>
-
-<script>
-    const apiKey = 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; // Замените YOUR_API_KEY на ваш ключ API
-
-    function sendMessage() {
-        const userInput = document.getElementById('user-input').value;
-        const chatHistory = document.getElementById('chat-history');
-        
-        // Проверка наличия текста ввода
-        if (userInput.trim() === '') {
-            return;
-        }
-
-        // Отправка запроса к API
-        fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                messages: [
-                    { role: 'system', content: 'You are a helpful assistant.' },
-                    { role: 'user', content: userInput }
-                ]
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            const modelReply = data.choices[0].message.content;
-            // Добавление сообщения в историю чата
-            chatHistory.innerHTML += `<p><strong>Вы:</strong> ${userInput}</p>`;
-            chatHistory.innerHTML += `<p><strong>ЧатGPT:</strong> ${modelReply}</p>`;
-            // Очистка поля ввода
-            document.getElementById('user-input').value = '';
-            // Прокрутка вниз, чтобы видеть последние сообщения
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-        })
-        .catch(error => console.error('Error:', error));
-    }
-</script>
-
-</body>
-</html>
+  <div class="card">
+    <h1>С днём рождения, моя любовь!</h1>
+    <p>
+      Я рад, что ты родилась и рад, что я могу быть рядом с тобой. Ты создаешь чудеса в моей жизни и я хочу, чтобы ты знала, что я всегда буду здесь, чтобы поддержать и любить тебя.
+    </p>
+    <p>
+      С днём рождения! Я надеюсь, что твой день будет наполнен всем, что тебя делает счастливой.
+    </p>
+    <div class="heart" style="top: 10%; left: 40%;">❤️</div>
+    <div class="heart" style="top: 50%; left: 10%;">❤️</div>
+    <div class="heart" style="top: 80%; right: 30%;">❤️</div>
+    <div class="wish" style="top: 30%; left: 0%;">Веселья и радости!</div>
+    <div class="wish" style="top: 70%; right: 0%;">улачи и счастья!</div>
+    <div class="wish" style="top: 50%; left: 0% ">Успехов во всем!</div>
+  </div></
+    
