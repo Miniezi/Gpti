@@ -1,7 +1,7 @@
 name: Build Forge mod
 on:
   push:
-    branches: [littletiles-spore-materialfix]
+    branches: [littletiles-break-diagnostics]
   workflow_dispatch:
 jobs:
   build:
@@ -24,6 +24,6 @@ jobs:
       - name: Upload candidate JAR
         uses: actions/upload-artifact@v4
         with:
-          name: littletiles-spore-fix-experimental
+          name: littletiles-break-tracer
           path: build/libs/*.jar
           if-no-files-found: error
