@@ -2,17 +2,11 @@ modLoader="javafml"
 loaderVersion="[47,)"
 license="MIT"
 [[mods]]
-modId="littletilesbreaktracer"
+modId="blockhardnesstooltip"
 version="1.0.0"
-displayName="LittleTiles Break Tracer"
-description='''Records LittleTiles changes and their Java call stacks to a dedicated file. Does not modify hardness.'''
-[[dependencies.littletilesbreaktracer]]
-modId="littletiles"
-mandatory=true
-versionRange="[1.6.0-pre161,)"
-ordering="AFTER"
-side="BOTH"
-[[dependencies.littletilesbreaktracer]]
+displayName="Block Hardness Tooltip"
+description='''Hold Shift while hovering block items to display their block hardness.'''
+[[dependencies.blockhardnesstooltip]]
 modId="minecraft"
 mandatory=true
 versionRange="[1.20.1,1.20.2)"
