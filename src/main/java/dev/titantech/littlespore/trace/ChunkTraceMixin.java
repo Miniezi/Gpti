@@ -1,6 +1,7 @@
 package dev.titantech.littlespore.trace;
 
 import net.minecraft.core.BlockPos;
+import dev.titantech.littlespore.logging.TraceLog;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.spongepowered.asm.mixin.Mixin;
