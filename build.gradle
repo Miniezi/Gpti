@@ -3,8 +3,8 @@ plugins {
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
 }
 group = 'dev.titantech'
-version = '0.1.0'
-base { archivesName = 'littletiles-spore-materialfix' }
+version = '1.0.0'
+base { archivesName = 'littletiles-break-tracer' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 minecraft {
     mappings channel: 'official', version: '1.20.1'
@@ -20,6 +20,6 @@ dependencies {
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 jar {
     manifest.attributes([
-        'MixinConfigs': 'littlesporematerialfix.mixins.json'
+        'MixinConfigs': 'littletilesbreaktracer.mixins.json'
     ])
 }
