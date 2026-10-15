@@ -11,8 +11,8 @@ import team.creative.littletiles.common.block.mc.BlockTile;
 
 @Mixin(LevelChunk.class)
 public abstract class ChunkTraceMixin {
-    @Inject(method = "setBlockState(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)Lnet/minecraft/world/level/block/state/BlockState;",
-        at = @At("HEAD"), require = 1)
+    @Inject(method = "m_6978_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)Lnet/minecraft/world/level/block/state/BlockState;",
+        at = @At("HEAD"), remap = false, require = 1)
     private void littletrace$beforeChange(BlockPos pos, BlockState replacement, boolean moving,
         CallbackInfoReturnable<BlockState> cir) {
         LevelChunk chunk = (LevelChunk)(Object)this;
