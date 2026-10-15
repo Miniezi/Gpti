@@ -1,43 +1,77 @@
 package dev.titantech.littlespore.mixin;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import team.creative.littletiles.common.block.entity.BETiles;
+import team.creative.littletiles.common.block.little.tile.LittleTile;
+import team.creative.littletiles.common.block.little.tile.parent.IParentCollection;
 import team.creative.littletiles.common.block.mc.BlockTile;
 
 /**
- * Global chunk mutation guard for direct and indirect Spore block replacement.
- * Applies to all Spore entities, not one attack method.
+ * Material-aware destruction guard at the exact LevelChunk mutation point
+ * observed by LittleTiles Break Tracer 1.0.2.
+ *
+ * For Spore-triggered replacement with air, the strongest material governs
+ * the whole LittleTiles container. An unbreakable constituent blocks removal.
  */
 @Mixin(value = LevelChunk.class, priority = 950)
 public abstract class SporeChunkMutationGuardMixin {
-    private static final Logger LITTLE_SPORE_LOG = LogManager.getLogger("LittleTilesSporeFix");
-    private static final StackWalker LITTLE_SPORE_FRAMES = StackWalker.getInstance();
+    private static final Logger LOG = LogManager.getLogger("LittleTilesSporeFix");
 
     @Inject(method = "m_6978_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)Lnet/minecraft/world/level/block/state/BlockState;",
-            at = @At("HEAD"), cancellable = true, remap = false, require = 0)
+            at = @At("HEAD"), cancellable = true, remap = false, require = 1)
     private void littlespore$guardChunkReplace(BlockPos pos, BlockState replacement,
-                    boolean moving, CallbackInfoReturnable<BlockState> cir) {
+            boolean moving, CallbackInfoReturnable<BlockState> cir) {
         LevelChunk chunk = (LevelChunk)(Object)this;
         Level level = chunk.getLevel();
-        if (level.isClientSide()) return;
-        if (!LITTLE_SPORE_FRAMES.walk(frames -> frames.anyMatch(f ->
-                    f.getClassName().startsWith("com.Harbinger.Spore.")))) return;
+        if (level.isClientSide() || !replacement.isAir()) return;
+        if (!StackWalker.getInstance().walk(frames -> frames.anyMatch(f ->
+                f.getClassName().startsWith("com.Harbinger.Spore.")))) return;
 
         BlockState original = chunk.getBlockState(pos);
         if (!(original.getBlock() instanceof BlockTile)) return;
-        if (original.equals(replacement)) return;
-        float hardness = original.getDestroySpeed(level, pos);
-        if (hardness < 0.0F || hardness > 5.0F) {
-            LITTLE_SPORE_LOG.info("Protected LittleTiles at {} from Spore (hardness={})", pos, hardness);
-            cir.setReturnValue(null);
+        if (!(chunk.getBlockEntity(pos) instanceof BETiles be)) {
+            LOG.warn("Spore attempted removal of LittleTiles at {} but BETiles missing", pos);
+            return;
+        }
+
+        float hardest = 0.0F;
+        boolean found = false;
+        try {
+            for (IParentCollection group : be.groups()) {
+                for (LittleTile tile : group) {
+                    BlockState material = tile.getState();
+                    if (material == null) continue;
+                    float value = material.getDestroySpeed(level, pos);
+                    if (value < 0.0F) {
+                        LOG.info("BLOCKED Spore removal of LittleTiles at {}: unbreakable material {}", pos, material);
+                        cir.setReturnValue(original);
+                        return;
+                    }
+                    if (!Float.isFinite(value)) continue;
+                    found = true;
+                    hardest = Math.max(hardest, value);
+                }
+            }
+        } catch (RuntimeException ex) {
+            LOG.warn("Failed reading LittleTiles materials at {}: {}", pos, ex.toString());
+            return;
+        }
+        if (found && hardest > 5.0F) {
+            LOG.info("BLOCKED Spore removal of LittleTiles at {}: hardest hardness={}", pos, hardest);
+            cir.setReturnValue(original);
+        } else {
+            LOG.info("ALLOWED Spore removal of LittleTiles at {}: hardest hardness={}, materialPresent={}",
+                    pos, hardest, found);
         }
     }
 }
