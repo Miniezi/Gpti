@@ -1,7 +1,6 @@
 package dev.titantech.littlespore.protection;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import team.creative.littletiles.common.block.entity.BETiles;
@@ -9,33 +8,45 @@ import team.creative.littletiles.common.block.little.tile.LittleTile;
 import team.creative.littletiles.common.block.little.tile.parent.IParentCollection;
 import team.creative.littletiles.common.block.mc.BlockTile;
 
-/** Reads vanilla or modded LittleTiles constituent BlockStates without mutating the block. */
+/**
+ * Supplies Spore's existing decision code with the strongest real BlockState
+ * in a LittleTiles container. This never mutates or replaces actual world data.
+ */
 public final class MaterialProtection {
     private MaterialProtection() {}
 
-    public static boolean shouldBlockSpore(Level level, BlockPos pos) {
-        if (!(level.getBlockState(pos).getBlock() instanceof BlockTile)) return false;
-        if (!(level.getBlockEntity(pos) instanceof BETiles be)) return false;
+    public static BlockState effectiveState(Level level, BlockPos pos, BlockState original) {
+        if (!(original.getBlock() instanceof BlockTile)) return original;
+        if (!(level.getBlockEntity(pos) instanceof BETiles be)) return original;
+        BlockState strongest = null;
+        float maximum = -Float.MAX_VALUE;
         try {
             for (IParentCollection group : be.groups()) {
                 for (LittleTile tile : group) {
                     BlockState material = tile.getState();
                     if (material == null) continue;
-                    String id = BuiltInRegistries.BLOCK.getKey(material.getBlock()).toString();
-                    if (id.startsWith("minecraft:polished_deepslate") ||
-                        id.startsWith("minecraft:deepslate_brick") ||
-                        id.startsWith("minecraft:cracked_deepslate_brick") ||
-                        id.startsWith("minecraft:deepslate_tile") ||
-                        id.startsWith("minecraft:cracked_deepslate_tile") ||
-                        id.equals("minecraft:chiseled_deepslate")) return true;
                     float hardness = material.getDestroySpeed(level, pos);
-                    if (hardness < 0.0F || hardness >= 5.0F) return true;
+                    // An unbreakable constituent makes the entire container unbreakable.
+                    if (hardness < 0.0F) return material;
+                    if (!Float.isFinite(hardness)) continue;
+                    if (strongest == null || hardness > maximum) {
+                        strongest = material;
+                        maximum = hardness;
+                    }
                 }
             }
-        } catch (RuntimeException e) {
+        } catch (RuntimeException ex) {
             org.apache.logging.log4j.LogManager.getLogger("LittleTilesSporeFix")
-                .warn("Could not inspect materials at {}: {}", pos, e.toString());
+                    .warn("Unable to read LittleTiles materials at {}: {}", pos, ex.toString());
+            return original;
         }
-        return false;
+        return strongest != null ? strongest : original;
+    }
+
+    public static boolean isUnbreakable(Level level, BlockPos pos) {
+        BlockState original = level.getBlockState(pos);
+        if (!(original.getBlock() instanceof BlockTile)) return false;
+        BlockState effective = effectiveState(level, pos, original);
+        return effective != original && effective.getDestroySpeed(level, pos) < 0.0F;
     }
 }
