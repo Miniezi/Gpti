@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
@@ -44,6 +45,8 @@ public abstract class SporeChunkMutationGuardMixin {
         }
 
         float hardest = 0.0F;
+        BlockState strongest = null;
+        boolean protectedDeepslate = false;
         boolean found = false;
         try {
             for (IParentCollection group : be.groups()) {
@@ -51,6 +54,18 @@ public abstract class SporeChunkMutationGuardMixin {
                     BlockState material = tile.getState();
                     if (material == null) continue;
                     float value = material.getDestroySpeed(level, pos);
+                    String id = BuiltInRegistries.BLOCK.getKey(material.getBlock()).toString();
+                    // Spore Inquisitor does not break these full-size vanilla variants.
+                    // Keep their LittleTiles representations equally protected.
+                    if (id.startsWith("minecraft:polished_deepslate") ||
+                        id.startsWith("minecraft:deepslate_brick") ||
+                        id.startsWith("minecraft:cracked_deepslate_brick") ||
+                        id.startsWith("minecraft:deepslate_tile") ||
+                        id.startsWith("minecraft:cracked_deepslate_tile") ||
+                        id.equals("minecraft:chiseled_deepslate")) {
+                        protectedDeepslate = true;
+                        strongest = material;
+                    }
                     if (value < 0.0F) {
                         LOG.info("BLOCKED Spore removal of LittleTiles at {}: unbreakable material {}", pos, material);
                         cir.setReturnValue(null);
@@ -65,7 +80,10 @@ public abstract class SporeChunkMutationGuardMixin {
             LOG.warn("Failed reading LittleTiles materials at {}: {}", pos, ex.toString());
             return;
         }
-        if (found && hardest > 5.0F) {
+        if (protectedDeepslate) {
+            LOG.info("BLOCKED Spore removal at {}: protected deepslate material {}", pos, strongest);
+            cir.setReturnValue(null);
+        } else if (found && hardest > 5.0F) {
             LOG.info("BLOCKED Spore removal of LittleTiles at {}: hardest hardness={}", pos, hardest);
             cir.setReturnValue(null);
         } else {
