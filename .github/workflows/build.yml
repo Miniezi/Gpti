@@ -1,7 +1,7 @@
-name: Build Forge mod
+name: Build LittleTiles Render Refresh
 on:
   push:
-    branches: [littletiles-break-diagnostics]
+    branches: [littletiles-render-refresh]
   workflow_dispatch:
 jobs:
   build:
@@ -15,15 +15,15 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.8'
-      - name: Resolve compile-only LittleTiles dependencies
+      - name: Resolve LittleTiles compile dependencies
         run: |
           mkdir -p libs
           python3 scripts/download_mods.py
       - name: Compile
         run: gradle build --stacktrace --no-daemon
-      - name: Upload candidate JAR
+      - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
-          name: littletiles-break-tracer
+          name: littletiles-render-refresh
           path: build/libs/*.jar
           if-no-files-found: error
