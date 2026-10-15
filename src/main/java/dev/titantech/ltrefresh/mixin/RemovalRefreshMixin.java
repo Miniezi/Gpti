@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import team.creative.littletiles.common.block.mc.BlockTile;
+
 
 /** Observe the *completed* client-side change, including updates from other mods. */
 @Mixin(LevelChunk.class)
@@ -22,7 +22,6 @@ public abstract class RemovalRefreshMixin {
         if (!(chunk.getLevel() instanceof ClientLevel client)) return;
         BlockState previous=cir.getReturnValue();
         if (previous == null || previous.equals(next)) return;
-        if (!(previous.getBlock() instanceof BlockTile) && !(next.getBlock() instanceof BlockTile)) return;
         ClientRefresh.queueBlockChange(client, pos);
     }
 }
