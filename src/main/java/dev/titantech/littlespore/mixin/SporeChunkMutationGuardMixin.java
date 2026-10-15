@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.block.Blocks;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
@@ -54,7 +53,7 @@ public abstract class SporeChunkMutationGuardMixin {
                     float value = material.getDestroySpeed(level, pos);
                     if (value < 0.0F) {
                         LOG.info("BLOCKED Spore removal of LittleTiles at {}: unbreakable material {}", pos, material);
-                        cir.setReturnValue(original);
+                        cir.setReturnValue(null);
                         return;
                     }
                     if (!Float.isFinite(value)) continue;
@@ -68,7 +67,7 @@ public abstract class SporeChunkMutationGuardMixin {
         }
         if (found && hardest > 5.0F) {
             LOG.info("BLOCKED Spore removal of LittleTiles at {}: hardest hardness={}", pos, hardest);
-            cir.setReturnValue(original);
+            cir.setReturnValue(null);
         } else {
             LOG.info("ALLOWED Spore removal of LittleTiles at {}: hardest hardness={}, materialPresent={}",
                     pos, hardest, found);
