@@ -1,7 +1,7 @@
-name: Build Forge mod
+name: Build Block Hardness Tooltip
 on:
   push:
-    branches: [littletiles-break-diagnostics]
+    branches: [block-hardness-tooltip]
   workflow_dispatch:
 jobs:
   build:
@@ -15,15 +15,11 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.8'
-      - name: Resolve compile-only LittleTiles dependencies
-        run: |
-          mkdir -p libs
-          python3 scripts/download_mods.py
       - name: Compile
         run: gradle build --stacktrace --no-daemon
-      - name: Upload candidate JAR
+      - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
-          name: littletiles-break-tracer
+          name: block-hardness-tooltip
           path: build/libs/*.jar
           if-no-files-found: error
