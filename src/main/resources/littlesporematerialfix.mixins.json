@@ -3,7 +3,12 @@
   "minVersion": "0.8",
   "package": "dev.titantech.littlespore.mixin",
   "compatibilityLevel": "JAVA_17",
-  "mixins": ["BlockTileMixin"],
+  "mixins": [
+    "BlockTileMixin",
+    "SporeLevelBreakGuardMixin"
+  ],
   "client": [],
-  "injectors": { "defaultRequire": 1 }
+  "injectors": {
+    "defaultRequire": 1
+  }
 }
