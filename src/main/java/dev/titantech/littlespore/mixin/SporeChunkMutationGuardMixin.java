@@ -22,7 +22,7 @@ public abstract class SporeChunkMutationGuardMixin {
         if (level.isClientSide() || !replacement.isAir()) return;
         if (!StackWalker.getInstance().walk(frames -> frames.anyMatch(f ->
                 f.getClassName().startsWith("com.Harbinger.Spore.")))) return;
-        if (!MaterialProtection.shouldBlockSpore(level, pos)) return;
+        if (!MaterialProtection.isUnbreakable(level, pos)) return;
 
         LogManager.getLogger("LittleTilesSporeFix")
             .info("BLOCKED Spore chunk removal BEFORE change at {}", pos);
