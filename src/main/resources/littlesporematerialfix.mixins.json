@@ -7,7 +7,9 @@
     "BlockTileMixin",
     "SporeLevelBreakGuardMixin",
     "InfectedInteractBlockMixin",
-    "SporeChunkMutationGuardMixin"
+    "SporeChunkMutationGuardMixin",
+    "InfectedMaterialViewMixin",
+    "CalamityMaterialViewMixin"
   ],
   "client": [],
   "injectors": {
