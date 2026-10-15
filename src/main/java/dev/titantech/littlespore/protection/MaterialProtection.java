@@ -9,7 +9,7 @@ import team.creative.littletiles.common.block.little.tile.LittleTile;
 import team.creative.littletiles.common.block.little.tile.parent.IParentCollection;
 import team.creative.littletiles.common.block.mc.BlockTile;
 
-/** Reads real LittleTiles constituent materials without mutating the block. */
+/** Reads vanilla or modded LittleTiles constituent BlockStates without mutating the block. */
 public final class MaterialProtection {
     private MaterialProtection() {}
 
@@ -29,7 +29,7 @@ public final class MaterialProtection {
                         id.startsWith("minecraft:cracked_deepslate_tile") ||
                         id.equals("minecraft:chiseled_deepslate")) return true;
                     float hardness = material.getDestroySpeed(level, pos);
-                    if (hardness < 0.0F || hardness > 5.0F) return true;
+                    if (hardness < 0.0F || hardness >= 5.0F) return true;
                 }
             }
         } catch (RuntimeException e) {
