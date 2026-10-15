@@ -1,7 +1,7 @@
-name: Build LittleTiles Render Refresh
+name: Build LittleTiles Render Diagnostics
 on:
   push:
-    branches: [littletiles-render-refresh]
+    branches: [littletiles-render-diagnostics]
   workflow_dispatch:
 jobs:
   build:
@@ -21,9 +21,8 @@ jobs:
           python3 scripts/download_mods.py
       - name: Compile
         run: gradle build --stacktrace --no-daemon
-      - name: Upload JAR
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: littletiles-render-refresh
+          name: littletiles-render-diagnostics
           path: build/libs/*.jar
           if-no-files-found: error
