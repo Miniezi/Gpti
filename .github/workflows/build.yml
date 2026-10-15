@@ -1,7 +1,7 @@
 name: Build LittleTiles Render Refresh
 on:
   push:
-    branches: [littletiles-render-refresh]
+    branches: [littletiles-render-faces]
   workflow_dispatch:
 jobs:
   build:
