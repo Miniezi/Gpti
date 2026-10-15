@@ -3,7 +3,7 @@ plugins {
  id 'net.minecraftforge.gradle' version '[6.0,6.2)'
 }
 group = 'dev.titantech'
-version = '1.0.0'
+version = '1.1.0'
 base { archivesName = 'littletiles-render-refresh' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 minecraft { mappings channel: 'official', version: '1.20.1' }
@@ -13,3 +13,5 @@ dependencies {
  compileOnly files('libs/LittleTiles.jar', 'libs/CreativeCore.jar')
 }
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+
+jar { manifest.attributes(['MixinConfigs':'littletilesrenderrefresh.mixins.json']) }
