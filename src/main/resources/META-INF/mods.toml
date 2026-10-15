@@ -3,9 +3,9 @@ loaderVersion="[47,)"
 license="MIT"
 [[mods]]
 modId="littletilesrenderrefresh"
-version="1.0.0"
+version="1.2.0"
 displayName="LittleTiles Render Refresh"
-description='''Client-side refresh of nearby LittleTiles mesh caches. Does not change blocks, tile data, hardness or Spore mechanics.'''
+description='''Client-side rebuild of LittleTiles neighbour faces after block changes. Does not change blocks, tile data, hardness or Spore mechanics.'''
 [[dependencies.littletilesrenderrefresh]]
 modId="littletiles"
 mandatory=true
