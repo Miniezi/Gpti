@@ -2,19 +2,19 @@ modLoader="javafml"
 loaderVersion="[47,)"
 license="MIT"
 [[mods]]
-modId="littletilesrenderrefresh"
+modId="littletilesrenderdiagnostics"
 version="1.0.0"
-displayName="LittleTiles Render Refresh"
-description='''Client-side refresh of nearby LittleTiles mesh caches. Does not change blocks, tile data, hardness or Spore mechanics.'''
-[[dependencies.littletilesrenderrefresh]]
+displayName="LittleTiles Render Diagnostics"
+description='''Records LittleTiles block changes, neighbour block entities, and client rendering refresh calls without modifying geometry.'''
+[[dependencies.littletilesrenderdiagnostics]]
 modId="littletiles"
 mandatory=true
 versionRange="[1.6.0-pre161,)"
 ordering="AFTER"
-side="CLIENT"
-[[dependencies.littletilesrenderrefresh]]
+side="BOTH"
+[[dependencies.littletilesrenderdiagnostics]]
 modId="minecraft"
 mandatory=true
 versionRange="[1.20.1,1.20.2)"
 ordering="NONE"
-side="CLIENT"
+side="BOTH"
