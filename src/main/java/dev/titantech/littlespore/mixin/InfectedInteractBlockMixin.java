@@ -17,7 +17,7 @@ public abstract class InfectedInteractBlockMixin {
     private void littlespore$preventHardTileDestruction(BlockPos pos, Level level,
             CallbackInfoReturnable<Boolean> cir) {
         if (level.isClientSide()) return;
-        if (!MaterialProtection.shouldBlockSpore(level, pos)) return;
+        if (!MaterialProtection.isUnbreakable(level, pos)) return;
         LogManager.getLogger("LittleTilesSporeFix")
             .info("BLOCKED Spore interaction BEFORE breaking LittleTiles at {}", pos);
         cir.setReturnValue(false);
