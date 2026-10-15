@@ -1,8 +1,0 @@
-{
-  "required": true,
-  "minVersion": "0.8",
-  "package": "dev.titantech.littlespore.trace",
-  "compatibilityLevel": "JAVA_17",
-  "mixins": ["ChunkTraceMixin"],
-  "injectors": {"defaultRequire": 1}
-}
