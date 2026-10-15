@@ -1,80 +1,51 @@
 package dev.titantech.ltrefresh;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.Direction;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import team.creative.littletiles.common.block.entity.BETiles;
 
-/**
- * Periodically invalidates rendering caches for nearby visible LittleTiles block
- * entities to recover from missed or delayed geometry rebuilds. Only the client
- * render manager is affected; world state, blockstates and tile data are untouched.
- */
-@Mod.EventBusSubscriber(modid = "littletilesrenderrefresh", value = Dist.CLIENT,
-        bus = Mod.EventBusSubscriber.Bus.FORGE)
+/** Invalidates both the LittleTiles tile mesh and vanilla section mesh after real client updates. */
+@Mod.EventBusSubscriber(modid="littletilesrenderrefresh", value=Dist.CLIENT, bus=Mod.EventBusSubscriber.Bus.FORGE)
 public final class ClientRefresh {
-    private static final int RESCAN_INTERVAL = 100; // five seconds
-    private static final int MAX_INVALIDATIONS_PER_TICK = 3;
-    private static final int CHUNK_RADIUS = 1;
-    private static final double MAX_DISTANCE_SQ = 48.0 * 48.0;
-
-    private static final List<BETiles> pending = new ArrayList<>();
-    private static ClientLevel trackedLevel;
-    private static int tickCounter;
-    private static int index;
-
+    private static ClientLevel current;
+    private static final Set<BlockPos> PENDING = new LinkedHashSet<>();
+    private static final int MAX_PER_TICK = 64;
     private ClientRefresh() {}
 
+    public static void queueBlockChange(ClientLevel level, BlockPos pos) {
+        if (current != level) { current = level; PENDING.clear(); }
+        if (PENDING.size() < 4096) PENDING.add(pos.immutable());
+    }
+
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
+    public static void tick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || mc.player == null || mc.isPaused()) {
-            pending.clear();
-            trackedLevel = null;
-            index = 0;
-            tickCounter = 0;
-            return;
+        if (mc.level == null || mc.level != current) { PENDING.clear(); current = mc.level; return; }
+        int processed = 0;
+        var it = PENDING.iterator();
+        while (it.hasNext() && processed++ < MAX_PER_TICK) {
+            BlockPos pos = it.next();
+            it.remove();
+            // Neighbours may have cached hidden faces that need to be exposed.
+            refresh(mc, pos);
+            for (Direction dir : Direction.values()) refresh(mc, pos.relative(dir));
+            mc.levelRenderer.setBlocksDirty(pos.getX()-2,pos.getY()-2,pos.getZ()-2,
+                    pos.getX()+2,pos.getY()+2,pos.getZ()+2);
         }
-        ClientLevel level = mc.level;
-        if (trackedLevel != level) {
-            pending.clear();
-            trackedLevel = level;
-            index = 0;
-            tickCounter = RESCAN_INTERVAL;
-        }
+    }
 
-        if (++tickCounter >= RESCAN_INTERVAL) {
-            tickCounter = 0;
-            pending.clear();
-            index = 0;
-            BlockPos center = mc.player.blockPosition();
-            int cx = center.getX() >> 4;
-            int cz = center.getZ() >> 4;
-            for (int x = cx - CHUNK_RADIUS; x <= cx + CHUNK_RADIUS; x++) {
-                for (int z = cz - CHUNK_RADIUS; z <= cz + CHUNK_RADIUS; z++) {
-                    if (!level.getChunkSource().hasChunk(x, z)) continue;
-                    LevelChunk chunk = level.getChunk(x, z);
-                    for (BlockEntity entity : chunk.getBlockEntities().values()) {
-                        if (!(entity instanceof BETiles be) || be.isRemoved() || be.render == null) continue;
-                        BlockPos p = be.getBlockPos();
-                        if (p.distSqr(center) <= MAX_DISTANCE_SQ) pending.add(be);
-                    }
-                }
-            }
-        }
-        for (int done = 0; index < pending.size() && done < MAX_INVALIDATIONS_PER_TICK; index++, done++) {
-            BETiles be = pending.get(index);
-            if (be.isRemoved() || be.getLevel() != level || be.render == null || be.render.isInQueue()) continue;
-            be.render.tilesChanged();
-        }
+    private static void refresh(Minecraft mc, BlockPos pos) {
+        if (!(mc.level.getBlockEntity(pos) instanceof BETiles be)) return;
+        if (be.isRemoved() || be.render == null) return;
+        be.render.tilesChanged();
     }
 }
