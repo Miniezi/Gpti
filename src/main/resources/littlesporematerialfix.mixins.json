@@ -6,7 +6,8 @@
   "mixins": [
     "BlockTileMixin",
     "SporeLevelBreakGuardMixin",
-    "InfectedInteractBlockMixin"
+    "InfectedInteractBlockMixin",
+    "SporeChunkMutationGuardMixin"
   ],
   "client": [],
   "injectors": {
