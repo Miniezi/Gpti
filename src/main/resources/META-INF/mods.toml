@@ -2,19 +2,19 @@ modLoader="javafml"
 loaderVersion="[47,)"
 license="MIT"
 [[mods]]
-modId="littletilesbreaktracer"
+modId="littletilesrenderrefresh"
 version="1.0.0"
-displayName="LittleTiles Break Tracer"
-description='''Records LittleTiles changes and their Java call stacks to a dedicated file. Does not modify hardness.'''
-[[dependencies.littletilesbreaktracer]]
+displayName="LittleTiles Render Refresh"
+description='''Client-side refresh of nearby LittleTiles mesh caches. Does not change blocks, tile data, hardness or Spore mechanics.'''
+[[dependencies.littletilesrenderrefresh]]
 modId="littletiles"
 mandatory=true
 versionRange="[1.6.0-pre161,)"
 ordering="AFTER"
-side="BOTH"
-[[dependencies.littletilesbreaktracer]]
+side="CLIENT"
+[[dependencies.littletilesrenderrefresh]]
 modId="minecraft"
 mandatory=true
 versionRange="[1.20.1,1.20.2)"
 ordering="NONE"
-side="BOTH"
+side="CLIENT"
