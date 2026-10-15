@@ -12,30 +12,39 @@ import team.creative.littletiles.common.block.little.tile.LittleTile;
 import team.creative.littletiles.common.block.little.tile.parent.IParentCollection;
 import team.creative.littletiles.common.block.mc.BlockTile;
 
-/** Experimental: use weakest constituent hardness for composite break rules. */
+/**
+ * A LittleTiles block is atomic for breaking: material hardness is the hardest
+ * constituent tile, not the weak container hardness.
+ *
+ * Unbreakable constituent (e.g. bedrock) makes the WHOLE container unbreakable.
+ * No internal tile deletion, no geometry math.
+ */
 @Mixin(value = BlockTile.class, remap = false)
 public abstract class BlockTileMixin {
     @Inject(method = "m_7749_", at = @At("HEAD"), cancellable = true, remap = false)
     private void littlespore$hardness(BlockState block, BlockGetter world,
                                    BlockPos pos, CallbackInfoReturnable<Float> cir) {
         if (!(world.getBlockEntity(pos) instanceof BETiles be)) return;
-        float minimum = Float.POSITIVE_INFINITY;
+        float maximum = 0.0F;
         boolean found = false;
         try {
             for (IParentCollection group : be.groups()) {
                 for (LittleTile tile : group) {
                     BlockState material = tile.getState();
                     if (material == null) continue;
-                    found = true;
                     float hardness = material.getDestroySpeed(world, pos);
-                    if (hardness >= 0 && Float.isFinite(hardness))
-                        minimum = Math.min(minimum, hardness);
+                    if (hardness < 0.0F) {
+                        cir.setReturnValue(-1.0F);
+                        return;
+                    }
+                    if (!Float.isFinite(hardness)) continue;
+                    found = true;
+                    maximum = Math.max(maximum, hardness);
                 }
             }
         } catch (RuntimeException ex) {
-            return; // Fall back to LittleTiles for temporarily invalid tile entities.
+            return;
         }
-        if (!found) return;
-        cir.setReturnValue(minimum == Float.POSITIVE_INFINITY ? -1.0F : minimum);
+        if (found) cir.setReturnValue(maximum);
     }
 }
