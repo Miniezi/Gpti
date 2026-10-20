@@ -1,0 +1,5 @@
+pyautogui>=0.9.54,<1
+pyperclip>=1.9,<2
+keyring>=25,<27
+keyboard>=0.13.5,<1
+pyinstaller>=6,<7
