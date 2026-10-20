@@ -6,12 +6,13 @@ import threading
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 from core import API, Agent, LocalTools
+from clipboard_ui import attach_tree, paste, select_all
 
 CONFIG=Path(os.environ.get('APPDATA',str(Path.home())))/'DeskPilot'/'settings.json'
 
 class App(tk.Tk):
     def __init__(self):
-        super().__init__(); self.title('DeskPilot • AI для Windows'); self.geometry('1050x800')
+        super().__init__(); self.title('DeskPilot 0.1.1 • AI для Windows'); self.geometry('1050x800')
         self.events=queue.Queue(); self.stop=threading.Event(); self.busy=False; self.agent=None; self.dialog=None
         self.url=tk.StringVar(value='https://api.openai.com/v1'); self.key=tk.StringVar(); self.model=tk.StringVar()
         self.output=tk.StringVar(value='2048'); self.window=tk.StringVar(value='24000'); self.status=tk.StringVar(value='Готово')
@@ -21,9 +22,13 @@ class App(tk.Tk):
         except (OSError,ValueError,KeyError): pass
         top=ttk.Frame(self,padding=12); top.pack(fill='x')
         ttk.Label(top,text='API URL (включая /v1)').grid(row=0,column=0,sticky='w')
-        ttk.Entry(top,textvariable=self.url,width=65).grid(row=0,column=1,sticky='ew')
+        self.url_entry=ttk.Entry(top,textvariable=self.url,width=65)
+        self.url_entry.grid(row=0,column=1,sticky='ew')
+        ttk.Button(top,text='Вставить URL',command=lambda:self.paste_field(self.url_entry)).grid(row=0,column=3,padx=6)
         ttk.Label(top,text='API-ключ').grid(row=1,column=0,sticky='w')
-        ttk.Entry(top,textvariable=self.key,show='•',width=65).grid(row=1,column=1,sticky='ew')
+        self.key_entry=ttk.Entry(top,textvariable=self.key,show='•',width=65)
+        self.key_entry.grid(row=1,column=1,sticky='ew')
+        ttk.Button(top,text='Вставить ключ',command=lambda:self.paste_field(self.key_entry)).grid(row=1,column=3,padx=6)
         ttk.Button(top,text='Сохранить ключ',command=self.save_key).grid(row=1,column=2,padx=6)
         ttk.Button(top,text='Загрузить ключ',command=self.load_key).grid(row=0,column=2,padx=6)
         ttk.Label(top,text='Модель').grid(row=2,column=0,sticky='w')
@@ -41,6 +46,7 @@ class App(tk.Tk):
         self.send=ttk.Button(buttons,text='Отправить',command=self.start); self.send.pack(side='left')
         ttk.Button(buttons,text='СТОП',command=self.halt).pack(side='left',padx=8)
         ttk.Label(buttons,textvariable=self.status).pack(side='left',padx=12)
+        attach_tree(self)
         self.after(80,self.poll); self.protocol('WM_DELETE_WINDOW',self.close)
         self.bind('<Control-Shift-F12>',lambda e:self.halt())
         try:
@@ -48,6 +54,10 @@ class App(tk.Tk):
             keyboard.add_hotkey('ctrl+shift+f12',lambda:self.events.put(('stop',None)))
         except Exception: self.log('Глобальная горячая клавиша недоступна; используйте кнопку Стоп.')
         self.log('Укажите API URL и ключ, загрузите модели. Модель можно вписать вручную.\nСнимки и разрешённое содержимое файлов отправляются выбранному API. Команды выполняются с правами вашей учётной записи.')
+    def paste_field(self,widget):
+        widget.focus_set()
+        select_all(widget)
+        paste(widget)
     def log(self,s):
         self.chat.configure(state='normal'); self.chat.insert('end',s+'\n\n'); self.chat.see('end'); self.chat.configure(state='disabled')
     def load_key(self):
@@ -86,6 +96,7 @@ class App(tk.Tk):
         ttk.Label(win,text='Проверьте все аргументы. run может выполнять любые команды и менять весь ПК.\nGUI-действие начнётся через 2 секунды после разрешения: выберите нужное окно.',padding=12).pack(anchor='w')
         text=scrolledtext.ScrolledText(win,wrap='word'); text.pack(fill='both',expand=True,padx=12)
         text.insert('1.0',json.dumps(args,ensure_ascii=False,indent=2)); text.configure(state='disabled')
+        attach_tree(win)
         def answer(ok):
             box['ok']=ok; event.set(); self.dialog=None; win.destroy()
         b=ttk.Frame(win,padding=12); b.pack(fill='x')
